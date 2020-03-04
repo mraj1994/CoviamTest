@@ -59,17 +59,16 @@ class ViewController: UIViewController {
             self?.itemList.removeAll()
             
             if error != nil {
-                print(error)
+                print(error?.localizedDescription ?? "")
                 return
             }
             
-            if let productDataArray =  result!["products"] as? [[String: Any]] {
-                var product = Product()
-                for productDict in productDataArray {
-                    product = Product(params: productDict)
+            if let productList = result?.products {
+                for product in productList {
                     self?.itemList.append(product)
                 }
             }
+
             DispatchQueue.main.async {
                 self?.searchTableView.reloadData()
             }
@@ -112,8 +111,11 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
 extension ViewController: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        
-        self.performSegue(withIdentifier: "show_results", sender: nil)
+        if textField.text != "" {
+            if itemList.count > 0 {
+                self.performSegue(withIdentifier: "show_results", sender: nil)
+            }
+        }
         return true
     }
 

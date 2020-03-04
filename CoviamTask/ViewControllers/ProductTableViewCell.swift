@@ -30,13 +30,13 @@ class ProductTableViewCell: UITableViewCell {
     
     func setupCell(data: Product) {
         
-            if let imageURLArray = data.image {
+        if let imageURLArray = data.images {
                 self.imageView?.loadImageUsingCache(withUrl: imageURLArray[0])
             }
             self.productNameLabel.text = data.name
             self.productPriceLabel.text = data.price?.priceDisplay
             
-            if let number = data.otherOffering?.count, let price = data.otherOffering?.startPrice {
+        if let number = data.otherOfferings?.count, let price = data.otherOfferings?.startPrice {
                  self.otherOffersLabel.text = String(format: "%@ other offers starting from %@", "\(number)",price)
             }
     }

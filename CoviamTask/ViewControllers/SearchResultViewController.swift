@@ -12,14 +12,16 @@ class SearchResultViewController: UIViewController {
     
     @IBOutlet weak var tableView: UITableView!
     
-    
+    let spinner = UIActivityIndicatorView(style: .medium)
     var pageTitle = ""
     var itemList = [Product]()
     var loadCount = 0
+    var isMoreDataAvailable = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = pageTitle
+        spinner.frame = CGRect(x: CGFloat(0), y: CGFloat(0), width: tableView.bounds.width, height: CGFloat(44))
         
     }
 
@@ -44,20 +46,27 @@ extension SearchResultViewController : UITableViewDelegate, UITableViewDataSourc
         
         if itemList.count > 0 {
             cell.setupCell(data: itemList[indexPath.row])
-        } 
-        
-        
-        if indexPath.row + 1 == itemList.count {
-            loadCount += 1
-            loadMoreData(start: loadCount * itemList.count)
-           
         }
-        
         return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 140
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+        //this prepares the activity indicator
+        let lastSectionIndex = tableView.numberOfSections - 1
+        let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
+        if indexPath.section ==  lastSectionIndex && indexPath.row == lastRowIndex {
+        self.tableView.tableFooterView = spinner
+  
+        //pagination logic
+        if indexPath.row + 1 == itemList.count, isMoreDataAvailable {
+            loadMoreData(start: itemList.count + 1)
+        }
+        }
     }
 
     
@@ -68,7 +77,6 @@ extension SearchResultViewController : UITableViewDelegate, UITableViewDataSourc
 
 extension SearchResultViewController {
     
-    
     // this mehtods loads more data while scrolling
     func loadMoreData(start: Int){
         let params: [String:Any] = [
@@ -76,16 +84,22 @@ extension SearchResultViewController {
                  "start" : "\(start)",
                  "itemPerPage" : "20"
         ]
+        self.tableView.tableFooterView?.isHidden = false
+        spinner.startAnimating()
         API().sendRequest(parameters: params) { [weak self](result,error) in
             if error != nil {
-                print(error)
+                print(error?.localizedDescription ?? "")
                 return
             }
-                 
-        if let productDataArray =  result!["products"] as? [[String: Any]] {
-            var product = Product()
-            for productDict in productDataArray {
-                product = Product(params: productDict)
+            if let productList = result?.products {
+                if productList.count == 0 {
+                    self?.isMoreDataAvailable = false
+                    DispatchQueue.main.async {
+                        self?.tableView.tableFooterView?.isHidden = true
+                        self?.spinner.stopAnimating()
+                    }
+                }
+                for product in productList {
                     self?.itemList.append(product)
                 }
             }

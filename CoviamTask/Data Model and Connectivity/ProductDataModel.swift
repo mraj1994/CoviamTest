@@ -8,67 +8,43 @@
 
 import Foundation
 
-class Product {
+
+struct SearchResult:Codable {
+    var code:Int?
+    var status : String?
+    var data: Result?
+    
+}
+
+struct Result: Codable {
+    var products : [Product]
+}
+
+
+struct Product: Codable {
     var name: String?
     var price: Price?
-    var image: [String]?
+    var images: [String]?
     var review: Review?
-    var otherOffering: OtherOfferings?
-    
-    init() {
-        
-    }
-    
-    init(params: [String:Any]) {
-        self.name = params["name"] as? String
-        
-        if let priceDict  = params["price"] as? [String:Any] {
-            var price = Price()
-            price.priceDisplay = priceDict["priceDisplay"] as? String
-            price.offerPriceDisplay = priceDict["offerPriceDisplay"] as? String
-
-            self.price = price
-        }
-        
-        self.image = params["images"] as? [String]
-        
-        if let reviewDict = params["review"] as? [String:Any] {
-            var review = Review()
-            review.count = reviewDict["count"] as? Int
-            review.rating = reviewDict["rating"] as? Int
-            
-            self.review = review
-        }
-        
-        if let othersOfferingDict = params["otherOfferings"] as? [String:Any] {
-            var otherOffering = OtherOfferings()
-            
-            otherOffering.count = othersOfferingDict["count"] as? Int
-            otherOffering.startPrice = othersOfferingDict["startPrice"] as? String
-            
-            self.otherOffering = otherOffering
-        }
-        
-    }
-    
+    var otherOfferings: OtherOfferings?
     
 }
 
 
-struct Price {
+struct Price: Codable {
     var priceDisplay: String?
     var offerPriceDisplay: String?
     
 }
 
 
-struct Review {
+struct Review:Codable {
     var rating: Int?
     var count: Int?
     
 }
 
-struct OtherOfferings {
+struct OtherOfferings: Codable {
     var count: Int?
     var startPrice: String?
 

@@ -12,7 +12,7 @@ class API {
     
     let urlToRequest = "https://www.blibli.com/backend/search/products?"
     
-    func sendRequest(parameters: [String: Any], completion: @escaping ([String: Any]?, Error?) -> Void) {
+    func sendRequest(parameters: [String: Any], completion: @escaping (Result?, Error?) -> Void) {
         var components = URLComponents(string: urlToRequest)!
         components.queryItems = parameters.map { (arg) -> URLQueryItem in
             
@@ -30,24 +30,12 @@ class API {
                     return
             }
 
-            let responseObject = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
-            if let dict = responseObject {
-                completion(dict["data"] as? [String : Any] , nil)
-            }
+            let jsonDecoder = JSONDecoder()
+            let result = try? jsonDecoder.decode(SearchResult.self, from: data)
+            completion(result?.data , nil)
           
         }
         task.resume()
     }
-
     
-    func convertToDictionary(text: String) -> [String: Any]? {
-           if let data = text.data(using: .utf8) {
-               do {
-                   return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-               } catch {
-                   print(error.localizedDescription)
-               }
-           }
-           return nil
-       }
 }
